@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">CyclusDashboard</string>
+    <string name="conectar">conectar</string>
+    <string name="nome_disp">nome do dispositivo</string>
+    <string name="dados">{dados}</string>
+</resources>
