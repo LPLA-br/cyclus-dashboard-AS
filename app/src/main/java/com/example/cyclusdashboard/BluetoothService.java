@@ -50,7 +50,7 @@ public class BluetoothService extends Service
 
     public void buscarDispositivoBluetoothLE()
     {
-        this.bluetoothLeScanner;
+        BluetoothLeScanner bluetoothLeScanner1 = this.bluetoothLeScanner;
     }
 
     @Override
