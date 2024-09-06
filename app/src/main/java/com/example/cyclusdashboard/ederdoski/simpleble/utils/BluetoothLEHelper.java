@@ -116,7 +116,7 @@ public class BluetoothLEHelper {
         return aDevices;
     }
 
-    @SuppressWarnings("MissingPermission")
+/*     @SuppressWarnings("MissingPermission")
     public void connect(BluetoothDevice device, BleCallback _bleCallback){
         if (mBluetoothGatt == null && !isConnected()) {
             bleCallback = _bleCallback;
@@ -129,6 +129,17 @@ public class BluetoothLEHelper {
         if (mBluetoothGatt != null && isConnected()) {
             mBluetoothGatt.close();
             mBluetoothGatt = null;
+        }
+    } 
+*/
+
+    @SuppressWarnings("MissingPermission")
+    public void connect(BluetoothDevice device, BleCallback _bleCallback) {
+        if (mBluetoothGatt == null && !isConnected()) {
+            bleCallback = _bleCallback;
+            mBluetoothGatt = device.connectGatt(act, false, mGattCallback);
+        } else {
+            Log.e("BluetoothLEHelper", "Device already connected or GATT is not null.");
         }
     }
 
@@ -161,10 +172,29 @@ public class BluetoothLEHelper {
         mBluetoothGatt.writeCharacteristic(mBluetoothGattCharacteristic);
     }
 
-    @SuppressWarnings("MissingPermission")
+    /* @SuppressWarnings("MissingPermission")
     public void read(String service, String characteristic){
         mBluetoothGatt.readCharacteristic(mBluetoothGatt.getService(UUID.fromString(service)).getCharacteristic(UUID.fromString(characteristic)));
 
+    } */
+   
+   @SuppressWarnings("MissingPermission")
+    public void read(String service, String characteristic) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (act.checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                Log.e("BluetoothLEHelper", "Permission BLUETOOTH_CONNECT is not granted.");
+                return;
+            }
+        }
+
+        BluetoothGattCharacteristic mBluetoothGattCharacteristic = 
+            mBluetoothGatt.getService(UUID.fromString(service)).getCharacteristic(UUID.fromString(characteristic));
+
+        if (mBluetoothGatt != null && mBluetoothGattCharacteristic != null) {
+            mBluetoothGatt.readCharacteristic(mBluetoothGattCharacteristic);
+        } else {
+            Log.e("BluetoothLEHelper", "BluetoothGatt or characteristic is null.");
+        }
     }
 
 
