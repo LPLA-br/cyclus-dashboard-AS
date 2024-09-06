@@ -1,9 +1,7 @@
-package com.example.cyclusdashboard;
+package com.example.cyclusdashboard.BluetoothLE;
 
 //IMPORTS COMPONENTES ANDROID
 import android.Manifest;
-import android.app.Service;
-import android.app.Activity;
 
 import androidx.core.app.ActivityCompat; //permissões
 import androidx.core.content.PermissionChecker;
@@ -32,7 +30,12 @@ import android.bluetooth.le.ScanSettings;
 
 import java.util.Vector;
 
-public class BluetoothService extends Service
+public class BluetoothLE
+{}
+
+/* Desenvolvimento congelado devido a fusão entre
+código fonte aberto de SimpleBle com Cyclus-dashboard
+public class BluetoothLE
 {
     protected BluetoothManager bluetoothManager;
     protected BluetoothAdapter bluetoothAdapter;
@@ -128,13 +131,12 @@ public class BluetoothService extends Service
             }
             else
             {
-                /*Procurar dispositivo para poder obter dispositivo via:
-                    this.bluetoothDevice().getRemoteDevice("MAC_BLE");
-                  Através de:
-                    this.bluetoothAdapter;
-                * */
+                //Procurar dispositivo para poder obter dispositivo via:
+                //    this.bluetoothDevice().getRemoteDevice("MAC_BLE");
+                //  Através de:
+                //    this.bluetoothAdapter;
                 this.bluetoothLeScanner = this.bluetoothAdapter.getBluetoothLeScanner();
-                //CONTINUA
+                //TODO: continuar caso ederdoski não funcione
             }
         }
     }
@@ -146,3 +148,4 @@ public class BluetoothService extends Service
         throw new UnsupportedOperationException("Not yet implemented");
     }
 }
+*/
