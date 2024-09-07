@@ -22,6 +22,8 @@ import com.example.cyclusdashboard.ederdoski.simpleble.models.BluetoothLE;
 
 import java.util.ArrayList;
 import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /** Classe responsável pelas conexções bluetooth
  * @Author ederdoski
@@ -43,7 +45,7 @@ public class BluetoothLEHelper {
 
     private static long SCAN_PERIOD             = 10000;
     private static boolean mScanning            = false;
-    private static String FILTER_SERVICE        = "";
+    private static String FILTER_SERVICE = "";
 
     @SuppressWarnings("MissingPermission")
     public BluetoothLEHelper(Activity _act){
@@ -166,7 +168,6 @@ public class BluetoothLEHelper {
         mBluetoothGatt.readCharacteristic(mBluetoothGatt.getService(UUID.fromString(service)).getCharacteristic(UUID.fromString(characteristic)));
 
     }
-
 
     private final BluetoothGattCallback mGattCallback;
     {

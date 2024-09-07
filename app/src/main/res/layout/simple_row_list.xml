@@ -24,7 +24,7 @@
             android:paddingTop="15dp"
             android:paddingBottom="15dp"
             android:minHeight="30dp"
-            android:textColor="@color/black"
+            android:textColor="@color/orange"
             android:gravity="left|center_vertical"
             android:textStyle="bold"
             android:textSize="15dp"/>

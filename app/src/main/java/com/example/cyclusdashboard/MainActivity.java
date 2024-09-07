@@ -28,6 +28,9 @@ import android.widget.TextView;
 import android.view.LayoutInflater;
 import android.app.AlertDialog;
 
+import android.widget.PopupWindow;
+
+
 import android.util.Log;
 
 //ELDERDOSKI ADAPTERS
@@ -48,8 +51,15 @@ public class MainActivity extends AppCompatActivity
     private ListView listBle;
     private Button btnScan;
     private Button btnRead;
+    private Button btnExit;
 
     // INICIO SETOR DE CÓDIGO ADAPTADO
+
+    /** Faz um alert surgir com título e texto
+     *  @param title: String
+     *  @param message: String
+     *  @param btnVisible: String
+     * */
     private AlertDialog setDialogInfo(String title, String message, boolean btnVisible){
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -77,6 +87,9 @@ public class MainActivity extends AppCompatActivity
         return builder.create();
     }
 
+    /** Usa ble para construir lista de dispositivos conectáveis (ADVERTISING)
+     *  Emprega Componente: BasicList para construção e retorno de lista.
+     * */
     private void setList(){
 
         ArrayList<BluetoothLE> aBleAvailable  = new ArrayList<>();
@@ -109,6 +122,7 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    /** Sobrescreve métodos assícronos Callbacks do BluetoothGattCallback */
     private BleCallback bleCallbacks(){
 
         return new BleCallback(){
@@ -147,6 +161,9 @@ public class MainActivity extends AppCompatActivity
                 if (status == BluetoothGatt.GATT_SUCCESS) {
                     Log.i("TAG", Arrays.toString(characteristic.getValue()));
                     runOnUiThread(() -> Toast.makeText(MainActivity.this, "onCharacteristicRead : "+Arrays.toString(characteristic.getValue()), Toast.LENGTH_SHORT).show());
+                } else {
+                    //feedback de fracasso
+                    runOnUiThread( () -> Toast.makeText( MainActivity.this, "onBleRead() fracassou", Toast.LENGTH_SHORT).show() );
                 }
             }
 
@@ -158,6 +175,11 @@ public class MainActivity extends AppCompatActivity
         };
     }
 
+    /** Emite alerta de acordo com o estado de escaneamento
+     *  de dispositivos de ble.isScannig();
+     *  Usa Handler para aguardar leitura e segue com
+     *  uso do método this.setList();
+     *  */
     private void scanCollars(){
 
         if(!ble.isScanning()) {
@@ -176,6 +198,7 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    /** Define disparo de função ao clickar dos botões */
     private void listenerButtons(){
 
         btnScan.setOnClickListener(v -> {
@@ -188,8 +211,21 @@ public class MainActivity extends AppCompatActivity
 
         btnRead.setOnClickListener(v -> {
             if(ble.isConnected()) {
-                ble.read(Constants.SERVICE_COLLAR_INFO, Constants.CHARACTERISTIC_CURRENT_POSITION);
+                try
+                {
+                    ble.read(Constants.SERVICE_COLLAR_INFO, Constants.CHARACTERISTIC_CURRENT_POSITION);
+                }
+                catch( Exception error )
+                {
+                    Toast.makeText(MainActivity.this, error.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "Leitura de caracteristica fracassou !", Toast.LENGTH_SHORT).show();
+                }
             }
+        });
+
+        btnExit.setOnClickListener(v -> {
+            ble.disconnect();
+            finish();
         });
 
     }
@@ -215,6 +251,7 @@ public class MainActivity extends AppCompatActivity
         listBle  = (ListView) findViewById(R.id.lista);
         btnScan  = (Button) findViewById(R.id.escanear);
         btnRead  = (Button) findViewById(R.id.ler);
+        btnExit  = (Button) findViewById(R.id.sair);
 
         listenerButtons();
     }
