@@ -27,11 +27,12 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.view.LayoutInflater;
 import android.app.AlertDialog;
+import android.util.Log;
 
 // IMPORTS CLASSES CYCLUS
 import com.example.cyclusdashboard.uteis.ConversorCyclus;
-
-import android.util.Log;
+import com.example.cyclusdashboard.uteis.ExtratorCyclus;
+import com.example.cyclusdashboard.uteis.TacometroCyclus;
 
 //ELDERDOSKI ADAPTERS
 import com.example.cyclusdashboard.ederdooski.adapters.BasicList;
@@ -48,7 +49,12 @@ public class MainActivity extends AppCompatActivity
     private BluetoothLEHelper ble;
     private AlertDialog dAlert;
 
+    private TacometroCyclus tacometro;
+    private ConversorCyclus conversor;
+    private ExtratorCyclus extrator;
+
     private Thread tarefaLeitura;
+    private boolean leitura;
 
     private ListView listBle;
     private Button btnScan;
@@ -164,7 +170,25 @@ public class MainActivity extends AppCompatActivity
                 if (status == BluetoothGatt.GATT_SUCCESS) {
                     Log.i("TAG", Arrays.toString(characteristic.getValue()));
                     //runOnUiThread(() -> Toast.makeText(MainActivity.this, (new ConversorCyclus(characteristic.getValue()).converterByteArrayParaString()), Toast.LENGTH_SHORT).show());
-                    runOnUiThread(() -> { MainActivity.this.dados.setText( new ConversorCyclus( characteristic.getValue() ).converterByteArrayParaString()); });
+                    runOnUiThread(() -> {
+                        String dados;
+                        int intervalo;
+                        conversor.setDados(characteristic.getValue());
+                        dados = conversor.converterByteArrayParaString();
+                        try {
+                            extrator.setStringJson(dados);
+                            intervalo = Integer.parseInt( extrator.extrairDadosDeStringJson(0) );
+                            tacometro.obterRpm(intervalo);
+                            tacometro.obterVelocidadeKmh();
+                            MainActivity.this.dados.setText( Integer.toString(tacometro.getVelocidadeKmh()) );
+                        } catch ( Exception e ) {
+                            Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+
+                        /*
+                        conversor.setDados(characteristic.getValue());
+                        MainActivity.this.dados.setText( conversor.converterByteArrayParaString() );*/
+                    });
                 } else {
                     //feedback de fracasso
                     runOnUiThread( () -> Toast.makeText( MainActivity.this, "onBleRead() fracassou", Toast.LENGTH_SHORT).show() );
@@ -214,16 +238,14 @@ public class MainActivity extends AppCompatActivity
         });
 
         btnRead.setOnClickListener(v -> {
-            if( ble.isConnected() ) {
-                try
-                {
-                    ble.read(Constants.SERVICE_COLLAR_INFO, Constants.CHARACTERISTIC_CURRENT_POSITION);
-                }
-                catch( Exception error )
-                {
-                    Toast.makeText(MainActivity.this, error.getMessage(), Toast.LENGTH_SHORT).show();
-                    Toast.makeText(MainActivity.this, "Leitura de caracteristica fracassou !", Toast.LENGTH_SHORT).show();
-                }
+            leitura = !leitura;
+            if ( leitura )
+            {
+                btnRead.setBackgroundColor( getResources().getColor(R.color.orange) );
+            }
+            else
+            {
+                btnRead.setBackgroundColor( getResources().getColor(R.color.red) );
             }
         });
 
@@ -238,7 +260,7 @@ public class MainActivity extends AppCompatActivity
 
     public void executarLeituraCaracteristica()
     {
-        if( ble.isConnected() ) {
+        if( ble.isConnected() && leitura ) {
             try
             {
                 ble.read(Constants.SERVICE_COLLAR_INFO, Constants.CHARACTERISTIC_CURRENT_POSITION);
@@ -267,6 +289,14 @@ public class MainActivity extends AppCompatActivity
         //--- Initialize BLE Helper
         ble = new BluetoothLEHelper(this);
 
+        tacometro = new TacometroCyclus();
+        extrator = new ExtratorCyclus("{}");
+        byte[] nada = {0x7b,0x7d};
+        conversor = new ConversorCyclus( nada );
+        leitura = false;
+
+        //this.tacometro.setPERIMETRO_CIRCULAR_PNEU(); //VIA_NUMBER_INPUT
+
         listBle  = (ListView) findViewById(R.id.lista);
         btnScan  = (Button) findViewById(R.id.escanear);
         btnRead  = (Button) findViewById(R.id.ler);
@@ -275,12 +305,13 @@ public class MainActivity extends AppCompatActivity
 
         listenerButtons();
 
+        //Reorientação de tela gerará falha catastrofica na aplicação !
         this.tarefaLeitura = new Thread(()->
         {
             while( true ) {
-                executarLeituraCaracteristica();
                 try {
                     Thread.sleep(100);
+                    executarLeituraCaracteristica();
                 } catch (InterruptedException e) {
                     Toast.makeText( MainActivity.this, e.toString(), Toast.LENGTH_SHORT ).show();
                     break;

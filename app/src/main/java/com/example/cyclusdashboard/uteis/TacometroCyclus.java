@@ -26,7 +26,7 @@ public class TacometroCyclus
 
     /** Atualiza atributo rpm  de acordo com
      * parâmetro de intervalo em millisegundos. */
-    protected void obterRpm( int intervalo )
+    public void obterRpm( int intervalo )
     {
         if ( intervalo > 0 )
         {

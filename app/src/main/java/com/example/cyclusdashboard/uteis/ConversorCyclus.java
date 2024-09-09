@@ -30,5 +30,7 @@ public class ConversorCyclus
         return dados.toString();
     }
 
-
+    public void setDados(byte[] dados) {
+        this.dados = dados;
+    }
 };
