@@ -28,8 +28,8 @@ import android.widget.TextView;
 import android.view.LayoutInflater;
 import android.app.AlertDialog;
 
-import android.widget.PopupWindow;
-
+// IMPORTS CLASSES CYCLUS
+import com.example.cyclusdashboard.uteis.ConversorCyclus;
 
 import android.util.Log;
 
@@ -48,10 +48,13 @@ public class MainActivity extends AppCompatActivity
     private BluetoothLEHelper ble;
     private AlertDialog dAlert;
 
+    private Thread tarefaLeitura;
+
     private ListView listBle;
     private Button btnScan;
     private Button btnRead;
     private Button btnExit;
+    private TextView dados;
 
     // INICIO SETOR DE CÓDIGO ADAPTADO
 
@@ -160,7 +163,8 @@ public class MainActivity extends AppCompatActivity
 
                 if (status == BluetoothGatt.GATT_SUCCESS) {
                     Log.i("TAG", Arrays.toString(characteristic.getValue()));
-                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "onCharacteristicRead : "+Arrays.toString(characteristic.getValue()), Toast.LENGTH_SHORT).show());
+                    //runOnUiThread(() -> Toast.makeText(MainActivity.this, (new ConversorCyclus(characteristic.getValue()).converterByteArrayParaString()), Toast.LENGTH_SHORT).show());
+                    runOnUiThread(() -> { MainActivity.this.dados.setText( new ConversorCyclus( characteristic.getValue() ).converterByteArrayParaString()); });
                 } else {
                     //feedback de fracasso
                     runOnUiThread( () -> Toast.makeText( MainActivity.this, "onBleRead() fracassou", Toast.LENGTH_SHORT).show() );
@@ -210,7 +214,7 @@ public class MainActivity extends AppCompatActivity
         });
 
         btnRead.setOnClickListener(v -> {
-            if(ble.isConnected()) {
+            if( ble.isConnected() ) {
                 try
                 {
                     ble.read(Constants.SERVICE_COLLAR_INFO, Constants.CHARACTERISTIC_CURRENT_POSITION);
@@ -232,6 +236,21 @@ public class MainActivity extends AppCompatActivity
 
     // FIM SETOR DE CÓDIGO ADAPTADO
 
+    public void executarLeituraCaracteristica()
+    {
+        if( ble.isConnected() ) {
+            try
+            {
+                ble.read(Constants.SERVICE_COLLAR_INFO, Constants.CHARACTERISTIC_CURRENT_POSITION);
+            }
+            catch( Exception error )
+            {
+                Toast.makeText(MainActivity.this, error.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "Leitura de caracteristica fracassou !", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -252,8 +271,23 @@ public class MainActivity extends AppCompatActivity
         btnScan  = (Button) findViewById(R.id.escanear);
         btnRead  = (Button) findViewById(R.id.ler);
         btnExit  = (Button) findViewById(R.id.sair);
+        dados =    (TextView) findViewById(R.id.dados);
 
         listenerButtons();
+
+        this.tarefaLeitura = new Thread(()->
+        {
+            while( true ) {
+                executarLeituraCaracteristica();
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    Toast.makeText( MainActivity.this, e.toString(), Toast.LENGTH_SHORT ).show();
+                    break;
+                }
+            }
+        });
+        this.tarefaLeitura.start();
     }
 
     @Override
@@ -291,5 +325,6 @@ public class MainActivity extends AppCompatActivity
     {
         super.onDestroy();
         ble.disconnect();
+        this.tarefaLeitura.interrupt();
     }
 }
