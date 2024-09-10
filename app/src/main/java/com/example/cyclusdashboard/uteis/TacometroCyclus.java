@@ -66,4 +66,8 @@ public class TacometroCyclus
     public int getVelocidadeKmh() {
         return velocidadeKmh;
     }
+
+    public int getPERIMETRO_CIRCULAR_PNEU() {
+        return PERIMETRO_CIRCULAR_PNEU;
+    }
 }

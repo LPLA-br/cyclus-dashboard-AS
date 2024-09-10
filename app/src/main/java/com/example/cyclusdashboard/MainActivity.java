@@ -27,6 +27,8 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.view.LayoutInflater;
 import android.app.AlertDialog;
+import android.widget.EditText;
+import android.content.DialogInterface;
 import android.util.Log;
 
 // IMPORTS CLASSES CYCLUS
@@ -61,6 +63,9 @@ public class MainActivity extends AppCompatActivity
     private Button btnRead;
     private Button btnExit;
     private TextView dados;
+    private TextView odometria;
+
+    private int distancia;
 
     // INICIO SETOR DE CÓDIGO ADAPTADO
 
@@ -184,10 +189,12 @@ public class MainActivity extends AppCompatActivity
                         } catch ( Exception e ) {
                             Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                         }
-
-                        /*
-                        conversor.setDados(characteristic.getValue());
-                        MainActivity.this.dados.setText( conversor.converterByteArrayParaString() );*/
+                        /*try {
+                            distancia += tacometro.getPERIMETRO_CIRCULAR_PNEU();
+                            MainActivity.this.odometria.setText(Integer.toString(distancia));
+                        } catch ( Exception e ) {
+                            Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT);
+                        }*/
                     });
                 } else {
                     //feedback de fracasso
@@ -273,6 +280,29 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    public void solicitarDefinicaoDePerimetroRoda(){
+
+        AlertDialog.Builder mensagem = new AlertDialog.Builder(MainActivity.this);
+        mensagem.setTitle("CONFIGURACAO");
+        mensagem.setMessage("Defina o perimetro externo da roda da frente em metros");
+
+        final EditText input = new EditText(MainActivity.this);
+        mensagem.setView(input);
+        mensagem.setNeutralButton("DEFINIR", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                try {
+                    int novoValor = Integer.parseInt( input.getText().toString() );
+                    tacometro.setPERIMETRO_CIRCULAR_PNEU( novoValor );
+                }
+                catch ( Exception e ) {
+                    Toast.makeText(MainActivity.this, "Configuração de perímetro falhou", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+        mensagem.show();
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -295,13 +325,14 @@ public class MainActivity extends AppCompatActivity
         conversor = new ConversorCyclus( nada );
         leitura = false;
 
-        //this.tacometro.setPERIMETRO_CIRCULAR_PNEU(); //VIA_NUMBER_INPUT
+        solicitarDefinicaoDePerimetroRoda();
 
         listBle  = (ListView) findViewById(R.id.lista);
         btnScan  = (Button) findViewById(R.id.escanear);
         btnRead  = (Button) findViewById(R.id.ler);
         btnExit  = (Button) findViewById(R.id.sair);
         dados =    (TextView) findViewById(R.id.dados);
+        odometria =(TextView) findViewById(R.id.odometro);
 
         listenerButtons();
 
