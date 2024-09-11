@@ -189,12 +189,12 @@ public class MainActivity extends AppCompatActivity
                         } catch ( Exception e ) {
                             Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                         }
-                        /*try {
-                            distancia += tacometro.getPERIMETRO_CIRCULAR_PNEU();
+                        try {
+                            distancia = Integer.parseInt( extrator.extrairDadosDeStringJson(1) ) * tacometro.getPERIMETRO_CIRCULAR_PNEU();
                             MainActivity.this.odometria.setText(Integer.toString(distancia));
                         } catch ( Exception e ) {
                             Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT);
-                        }*/
+                        }
                     });
                 } else {
                     //feedback de fracasso
